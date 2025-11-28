@@ -26,19 +26,26 @@ class MetricsCollector:
         self.region = region
         self.cloudwatch = None
         
-        # Intentar inicializar cliente de CloudWatch
-        try:
-            self.cloudwatch = boto3.client(
-                'cloudwatch',
-                region_name=region,
-                aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-                aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
-            )
-            logger.info(f"CloudWatch client initialized for region {region}")
-        except NoCredentialsError:
-            logger.warning("AWS credentials not found. Metrics will be logged locally only.")
-        except Exception as e:
-            logger.warning(f"Could not initialize CloudWatch client: {e}")
+        # Inicializar cliente de CloudWatch solo si existen credenciales en el entorno
+        aws_key = os.getenv("AWS_ACCESS_KEY_ID")
+        aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_profile = os.getenv("AWS_PROFILE")
+
+        if aws_key and aws_secret or aws_profile:
+            try:
+                self.cloudwatch = boto3.client(
+                    'cloudwatch',
+                    region_name=region,
+                    aws_access_key_id=aws_key or None,
+                    aws_secret_access_key=aws_secret or None
+                )
+                logger.info(f"CloudWatch client initialized for region {region}")
+            except NoCredentialsError:
+                logger.warning("AWS credentials not found. Metrics will be logged locally only.")
+            except Exception as e:
+                logger.warning(f"Could not initialize CloudWatch client: {e}")
+        else:
+            logger.info("No AWS credentials found in environment; CloudWatch metrics disabled.")
 
     def _get_http_status_range(self, status_code: int) -> str:
         """Determina el rango del código HTTP"""
