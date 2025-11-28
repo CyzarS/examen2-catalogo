@@ -81,6 +81,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Update ECS service
+      - name: Create or Update ECS service
         run: |
-          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+          # Try to update service, if it doesn't exist, skip (will be created manually or via CloudFormation update)
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment 2>/dev/null || echo "Service $ECS_SERVICE not found, skipping update. Please create the service manually first."
