@@ -97,3 +97,4 @@ El pipeline de GitHub Actions:
 1. Ejecuta tests en cada PR
 2. Construye y sube imagen a ECR en push a main
 3. Despliega automáticamente a ECS
+# Test pipeline
